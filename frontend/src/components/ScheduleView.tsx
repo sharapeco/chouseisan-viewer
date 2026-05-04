@@ -40,7 +40,7 @@ export function ScheduleView({ data, fetchedAt, fromCache }: Props) {
   return (
     <div className="space-y-3">
       <div>
-        <h2 className="text-base font-bold">{data.eventName}</h2>
+        <h2 className="text-xl font-bold">{data.eventName}</h2>
         <p className="text-xs text-gray-400 mt-0.5">
           {fromCache ? "キャッシュ表示 / " : ""}
           取得日時: {new Date(fetchedAt).toLocaleString()}

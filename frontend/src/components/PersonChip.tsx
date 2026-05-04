@@ -11,7 +11,7 @@ export function PersonChip({ name, hasComment, isActive, onClick }: Props) {
       data-chip=""
       onClick={onClick}
       className={[
-        "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs border transition-colors touch-manipulation",
+        "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs border cursor-pointer transition-colors touch-manipulation",
         isActive
           ? "bg-blue-100 border-blue-400 text-blue-800"
           : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50 active:bg-gray-100",
