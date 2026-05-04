@@ -7,6 +7,7 @@ interface CacheEntry {
 }
 
 const STORAGE_PREFIX = "chouseisan:";
+const LAST_URL_KEY = "chouseisan:lastUrl";
 const PROXY_BASE = import.meta.env.VITE_PROXY_URL ?? "";
 
 function extractH(raw: string): string | null {
@@ -33,9 +34,17 @@ function saveCache(h: string, sourceUrl: string, csv: string): CacheEntry {
 }
 
 export default function App() {
-  const [urlInput, setUrlInput] = useState("");
-  const [entry, setEntry] = useState<CacheEntry | null>(null);
-  const [fromCache, setFromCache] = useState(false);
+  const [urlInput, setUrlInput] = useState(
+    () => localStorage.getItem(LAST_URL_KEY) ?? ""
+  );
+  const [entry, setEntry] = useState<CacheEntry | null>(() => {
+    const h = extractH(localStorage.getItem(LAST_URL_KEY) ?? "");
+    return h ? loadCache(h) : null;
+  });
+  const [fromCache, setFromCache] = useState(() => {
+    const h = extractH(localStorage.getItem(LAST_URL_KEY) ?? "");
+    return h ? loadCache(h) !== null : false;
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -81,9 +90,12 @@ export default function App() {
       <input
         className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         type="text"
-        placeholder="https://chouseisan.com/s?h=XXXX"
+        placeholder="調整さんのURL（例：https://chouseisan.com/s?h=XXXX）"
         value={urlInput}
-        onChange={(e) => setUrlInput(e.target.value)}
+        onChange={(e) => {
+          setUrlInput(e.target.value);
+          localStorage.setItem(LAST_URL_KEY, e.target.value);
+        }}
         onKeyDown={(e) => e.key === "Enter" && handleFetch()}
       />
 
