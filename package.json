@@ -2,7 +2,8 @@
 	"name": "chouseisan-viewer",
 	"version": "0.1.0",
 	"scripts": {
-		"dev": "concurrently \"pnpm --filter ./proxy dev\" \"pnpm --filter ./frontend dev\""
+		"dev": "concurrently \"pnpm --filter ./proxy dev\" \"pnpm --filter ./frontend dev\"",
+		"test": "pnpm --filter ./frontend test"
 	},
 	"devDependencies": {
 		"concurrently": "^9.2.1"
