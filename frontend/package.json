@@ -1,5 +1,6 @@
 {
   "name": "chouseisan-viewer-frontend",
+  "type": "module",
   "private": true,
   "scripts": {
     "dev": "vite",

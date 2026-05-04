@@ -1,4 +1,5 @@
 dist/
+*.tsbuildinfo
 tmp/
 .wrangler/
 node_modules/
