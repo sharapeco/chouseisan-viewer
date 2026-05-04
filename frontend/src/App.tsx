@@ -7,6 +7,7 @@ interface CacheEntry {
 }
 
 const STORAGE_PREFIX = "chouseisan:";
+const PROXY_BASE = import.meta.env.VITE_PROXY_URL ?? "";
 
 function extractH(raw: string): string | null {
   try {
@@ -42,7 +43,7 @@ export default function App() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/csv?h=${encodeURIComponent(h)}`);
+      const res = await fetch(`${PROXY_BASE}/api/csv?h=${encodeURIComponent(h)}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const csv = await res.text();
       const saved = saveCache(h, sourceUrl, csv);
