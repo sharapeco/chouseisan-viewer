@@ -1,0 +1,10 @@
+{
+	"name": "chouseisan-viewer",
+	"version": "0.1.0",
+	"scripts": {
+		"dev": "concurrently \"pnpm --filter ./proxy dev\" \"pnpm --filter ./frontend dev\""
+	},
+	"devDependencies": {
+		"concurrently": "^9.2.1"
+	}
+}
