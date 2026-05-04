@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { SERVICE_NAME } from "./config";
 import { parseChouseisan } from "./lib/chouseisan";
 import { ScheduleView } from "./components/ScheduleView";
 
@@ -35,18 +36,31 @@ function saveCache(h: string, sourceUrl: string, csv: string): CacheEntry {
   return entry;
 }
 
+function sourceUrl(h: string) {
+  return `https://chouseisan.com/s?h=${h}`;
+}
+
+const initialH = new URLSearchParams(window.location.search).get("h");
+
 export default function App() {
-  const [urlInput, setUrlInput] = useState(
-    () => localStorage.getItem(LAST_URL_KEY) ?? ""
+  const [urlInput, setUrlInput] = useState(() => {
+    if (initialH) return sourceUrl(initialH);
+    return localStorage.getItem(LAST_URL_KEY) ?? "";
+  });
+  const [entry, setEntry] = useState<CacheEntry | null>(() =>
+    initialH ? loadCache(initialH) : (() => {
+      const h = extractH(localStorage.getItem(LAST_URL_KEY) ?? "");
+      return h ? loadCache(h) : null;
+    })()
   );
-  const [entry, setEntry] = useState<CacheEntry | null>(() => {
-    const h = extractH(localStorage.getItem(LAST_URL_KEY) ?? "");
-    return h ? loadCache(h) : null;
-  });
-  const [fromCache, setFromCache] = useState(() => {
-    const h = extractH(localStorage.getItem(LAST_URL_KEY) ?? "");
-    return h ? loadCache(h) !== null : false;
-  });
+  const [fromCache, setFromCache] = useState(() =>
+    initialH
+      ? loadCache(initialH) !== null
+      : (() => {
+          const h = extractH(localStorage.getItem(LAST_URL_KEY) ?? "");
+          return h ? loadCache(h) !== null : false;
+        })()
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -59,18 +73,41 @@ export default function App() {
     }
   }, [entry]);
 
-  async function fetch_csv(h: string, sourceUrl: string) {
+  useEffect(() => {
+    if (parsed?.ok) {
+      document.title = `${parsed.data.eventName} - ${SERVICE_NAME}`;
+    } else {
+      document.title = SERVICE_NAME;
+    }
+  }, [parsed]);
+
+  // On mount: if URL had ?h= and no cache, fetch it
+  const didInitialFetch = useRef(false);
+  useEffect(() => {
+    if (didInitialFetch.current) return;
+    didInitialFetch.current = true;
+    if (initialH && !loadCache(initialH)) {
+      fetch_csv(initialH, sourceUrl(initialH), true);
+    } else if (!initialH && entry) {
+      const h = extractH(urlInput);
+      if (h) history.replaceState(null, "", `/?h=${h}`);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function fetch_csv(h: string, src: string, clearUrlOnFail = false) {
     setLoading(true);
     setError(null);
     try {
       const res = await fetch(`${PROXY_BASE}/api/csv?h=${encodeURIComponent(h)}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const csv = await res.text();
-      const saved = saveCache(h, sourceUrl, csv);
+      const saved = saveCache(h, src, csv);
       setEntry(saved);
       setFromCache(false);
+      history.pushState(null, "", `/?h=${h}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
+      if (clearUrlOnFail) history.replaceState(null, "", "/");
     } finally {
       setLoading(false);
     }
@@ -84,6 +121,7 @@ export default function App() {
     if (cached) {
       setEntry(cached);
       setFromCache(true);
+      history.pushState(null, "", `/?h=${h}`);
     } else {
       fetch_csv(h, urlInput.trim());
     }
@@ -96,7 +134,7 @@ export default function App() {
 
   return (
     <div className="max-w-2xl mx-auto p-6 space-y-4">
-      <h1 className="text-xl font-bold">調整さんビューア</h1>
+      <h1 className="text-xl font-bold">{SERVICE_NAME}</h1>
 
       <input
         className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
