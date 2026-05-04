@@ -1,4 +1,5 @@
 import { PersonChip } from "./PersonChip";
+import { sortByInstrument } from "../utils/instrumentSort";
 
 export interface Person {
   name: string;
@@ -27,7 +28,7 @@ export function AnswerGroup({ type, people, activeName, onChipClick }: Props) {
         {label} {people.length}人
       </div>
       <div className="flex flex-wrap gap-1.5">
-        {people.map((p) => (
+        {sortByInstrument(people).map((p) => (
           <PersonChip
             key={p.name}
             name={p.name}
