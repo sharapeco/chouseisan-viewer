@@ -1,4 +1,5 @@
 dist/
+tmp/
 .wrangler/
 node_modules/
 *.log
