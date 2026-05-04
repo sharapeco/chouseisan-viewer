@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { parseChouseisan } from "./lib/chouseisan";
+import { ScheduleView } from "./components/ScheduleView";
 
 interface CacheEntry {
   fetched_at: string;
@@ -48,6 +50,15 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const parsed = useMemo(() => {
+    if (!entry) return null;
+    try {
+      return { ok: true as const, data: parseChouseisan(entry.csv) };
+    } catch (e) {
+      return { ok: false as const, error: e instanceof Error ? e.message : String(e) };
+    }
+  }, [entry]);
+
   async function fetch_csv(h: string, sourceUrl: string) {
     setLoading(true);
     setError(null);
@@ -84,12 +95,13 @@ export default function App() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto p-6 space-y-4">
-      <h1 className="text-2xl font-bold">調整さんビューア</h1>
+    <div className="max-w-2xl mx-auto p-6 space-y-4">
+      <h1 className="text-xl font-bold">調整さんビューア</h1>
 
       <input
-        className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         type="text"
+        inputMode="url"
         placeholder="調整さんのURL（例：https://chouseisan.com/s?h=XXXX）"
         value={urlInput}
         onChange={(e) => {
@@ -101,7 +113,7 @@ export default function App() {
 
       <div className="flex gap-2">
         <button
-          className="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 touch-manipulation"
           onClick={handleFetch}
           disabled={loading}
         >
@@ -109,7 +121,7 @@ export default function App() {
         </button>
         {entry && (
           <button
-            className="px-4 py-2 bg-gray-200 rounded text-sm hover:bg-gray-300 disabled:opacity-50"
+            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 active:bg-gray-300 disabled:opacity-50 touch-manipulation"
             onClick={handleRefresh}
             disabled={loading}
           >
@@ -119,19 +131,12 @@ export default function App() {
       </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
-
       {loading && <p className="text-sm text-gray-500">取得中…</p>}
 
-      {entry && !loading && (
-        <div className="space-y-1">
-          <p className="text-xs text-gray-500">
-            {fromCache ? "キャッシュ表示 — 最新を取得するには「更新」を押してください / " : ""}
-            取得日時: {new Date(entry.fetched_at).toLocaleString()}
-          </p>
-          <pre className="bg-gray-100 rounded p-4 text-xs overflow-x-auto whitespace-pre-wrap">
-            {entry.csv}
-          </pre>
-        </div>
+      {parsed && !loading && (
+        parsed.ok
+          ? <ScheduleView data={parsed.data} fetchedAt={entry!.fetched_at} fromCache={fromCache} />
+          : <p className="text-sm text-red-600">解析エラー: {parsed.error}</p>
       )}
     </div>
   );
