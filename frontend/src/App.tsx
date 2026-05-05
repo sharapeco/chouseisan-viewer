@@ -1,68 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { SERVICE_NAME } from "./config";
 import { parseChouseisan } from "./lib/chouseisan";
 import { ScheduleView } from "./components/ScheduleView";
-
-interface CacheEntry {
-  fetched_at: string;
-  csv: string;
-  source_url: string;
-}
-
-const STORAGE_PREFIX = "chouseisan:";
-const LAST_URL_KEY = "chouseisan:lastUrl";
-const PROXY_BASE = import.meta.env.VITE_PROXY_URL ?? "";
-
-function extractH(raw: string): string | null {
-  try {
-    return new URL(raw.trim()).searchParams.get("h");
-  } catch {
-    return null;
-  }
-}
-
-function loadCache(h: string): CacheEntry | null {
-  try {
-    const raw = localStorage.getItem(STORAGE_PREFIX + h);
-    return raw ? (JSON.parse(raw) as CacheEntry) : null;
-  } catch {
-    return null;
-  }
-}
-
-function saveCache(h: string, sourceUrl: string, csv: string): CacheEntry {
-  const entry: CacheEntry = { fetched_at: new Date().toISOString(), csv, source_url: sourceUrl };
-  localStorage.setItem(STORAGE_PREFIX + h, JSON.stringify(entry));
-  return entry;
-}
-
-function sourceUrl(h: string) {
-  return `https://chouseisan.com/s?h=${h}`;
-}
-
-const initialH = new URLSearchParams(window.location.search).get("h");
+import { useChouseisanFetch } from "./hooks/useChouseisanFetch";
 
 export default function App() {
-  const [urlInput, setUrlInput] = useState(() => {
-    if (initialH) return sourceUrl(initialH);
-    return localStorage.getItem(LAST_URL_KEY) ?? "";
-  });
-  const [entry, setEntry] = useState<CacheEntry | null>(() =>
-    initialH ? loadCache(initialH) : (() => {
-      const h = extractH(localStorage.getItem(LAST_URL_KEY) ?? "");
-      return h ? loadCache(h) : null;
-    })()
-  );
-  const [fromCache, setFromCache] = useState(() =>
-    initialH
-      ? loadCache(initialH) !== null
-      : (() => {
-          const h = extractH(localStorage.getItem(LAST_URL_KEY) ?? "");
-          return h ? loadCache(h) !== null : false;
-        })()
-  );
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { urlInput, handleUrlChange, entry, fromCache, loading, error, handleFetch, handleRefresh } =
+    useChouseisanFetch();
 
   const parsed = useMemo(() => {
     if (!entry) return null;
@@ -74,63 +18,8 @@ export default function App() {
   }, [entry]);
 
   useEffect(() => {
-    if (parsed?.ok) {
-      document.title = `${parsed.data.eventName} - ${SERVICE_NAME}`;
-    } else {
-      document.title = SERVICE_NAME;
-    }
+    document.title = parsed?.ok ? `${parsed.data.eventName} - ${SERVICE_NAME}` : SERVICE_NAME;
   }, [parsed]);
-
-  // On mount: if URL had ?h= and no cache, fetch it
-  const didInitialFetch = useRef(false);
-  useEffect(() => {
-    if (didInitialFetch.current) return;
-    didInitialFetch.current = true;
-    if (initialH && !loadCache(initialH)) {
-      fetch_csv(initialH, sourceUrl(initialH), true);
-    } else if (!initialH && entry) {
-      const h = extractH(urlInput);
-      if (h) history.replaceState(null, "", `/?h=${h}`);
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  async function fetch_csv(h: string, src: string, clearUrlOnFail = false) {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(`${PROXY_BASE}/api/csv?h=${encodeURIComponent(h)}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const csv = await res.text();
-      const saved = saveCache(h, src, csv);
-      setEntry(saved);
-      setFromCache(false);
-      history.pushState(null, "", `/?h=${h}`);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-      if (clearUrlOnFail) history.replaceState(null, "", "/");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  function handleFetch() {
-    const h = extractH(urlInput);
-    if (!h) { setError("URLが正しくありません（h パラメータが見つかりません）"); return; }
-    setError(null);
-    const cached = loadCache(h);
-    if (cached) {
-      setEntry(cached);
-      setFromCache(true);
-      history.pushState(null, "", `/?h=${h}`);
-    } else {
-      fetch_csv(h, urlInput.trim());
-    }
-  }
-
-  function handleRefresh() {
-    const h = extractH(urlInput);
-    if (h) fetch_csv(h, urlInput.trim());
-  }
 
   return (
     <div className="max-w-2xl mx-auto p-6 space-y-4">
@@ -145,10 +34,7 @@ export default function App() {
         inputMode="url"
         placeholder="調整さんのURL（例：https://chouseisan.com/s?h=XXXX）"
         value={urlInput}
-        onChange={(e) => {
-          setUrlInput(e.target.value);
-          localStorage.setItem(LAST_URL_KEY, e.target.value);
-        }}
+        onChange={(e) => handleUrlChange(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && handleFetch()}
       />
 
