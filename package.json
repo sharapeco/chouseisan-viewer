@@ -3,9 +3,13 @@
 	"version": "0.1.0",
 	"scripts": {
 		"dev": "concurrently \"pnpm --filter ./proxy dev\" \"pnpm --filter ./frontend dev\"",
-		"test": "pnpm --filter ./frontend test"
+		"test": "pnpm --filter ./frontend test",
+		"lint": "biome check .",
+		"lint:fix": "biome check --write .",
+		"typecheck": "pnpm -r typecheck"
 	},
 	"devDependencies": {
+		"@biomejs/biome": "^2.4.14",
 		"concurrently": "^9.2.1"
 	}
 }
