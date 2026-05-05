@@ -33,6 +33,7 @@ export function DateAccordion({
 	return (
 		<div className="border border-gray-200 rounded-xl overflow-hidden">
 			<button
+				type="button"
 				className="w-full flex items-center justify-between gap-3 px-4 py-3 bg-white hover:bg-gray-50 active:bg-gray-100 transition-colors text-left cursor-pointer touch-manipulation"
 				onClick={() => setOpen((v) => !v)}
 				aria-expanded={open}

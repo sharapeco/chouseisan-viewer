@@ -13,6 +13,7 @@ export function CommentPopup({ name, comment, onClose }: Props) {
 			<div className="flex items-start justify-between gap-3 mb-2">
 				<span className="font-semibold text-sm leading-snug">{name}</span>
 				<button
+					type="button"
 					onClick={onClose}
 					aria-label="閉じる"
 					className="shrink-0 w-6 h-6 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 active:bg-gray-200 transition-colors text-base leading-none"

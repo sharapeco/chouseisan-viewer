@@ -55,6 +55,7 @@ export default function App() {
 
 			<div className="flex gap-2">
 				<button
+					type="button"
 					className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 cursor-pointer touch-manipulation"
 					onClick={handleFetch}
 					disabled={loading}
@@ -63,6 +64,7 @@ export default function App() {
 				</button>
 				{entry && (
 					<button
+						type="button"
 						className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 active:bg-gray-300 disabled:opacity-50 cursor-pointer touch-manipulation"
 						onClick={handleRefresh}
 						disabled={loading}
@@ -80,6 +82,7 @@ export default function App() {
 				(parsed.ok ? (
 					<ScheduleView
 						data={parsed.data}
+						// biome-ignore lint/style/noNonNullAssertion: parsed.ok のとき entry は必ず存在する
 						fetchedAt={entry!.fetched_at}
 						fromCache={fromCache}
 					/>

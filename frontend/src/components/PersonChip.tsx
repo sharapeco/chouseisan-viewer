@@ -8,6 +8,7 @@ interface Props {
 export function PersonChip({ name, hasComment, isActive, onClick }: Props) {
 	return (
 		<button
+			type="button"
 			data-chip=""
 			onClick={onClick}
 			className={[

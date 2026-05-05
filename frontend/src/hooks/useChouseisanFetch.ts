@@ -69,6 +69,7 @@ export function useChouseisanFetch() {
 	const [error, setError] = useState<string | null>(null);
 
 	const didInitialFetch = useRef(false);
+	// biome-ignore lint/correctness/useExhaustiveDependencies: 初回マウント時のみ実行
 	useEffect(() => {
 		if (didInitialFetch.current) return;
 		didInitialFetch.current = true;
@@ -78,7 +79,7 @@ export function useChouseisanFetch() {
 			const h = extractH(urlInput);
 			if (h) history.replaceState(null, "", `/?h=${h}`);
 		}
-	}, []); // eslint-disable-line react-hooks/exhaustive-deps
+	}, []);
 
 	async function fetchCsv(h: string, src: string, clearUrlOnFail = false) {
 		setLoading(true);

@@ -65,7 +65,7 @@ describe("sortByInstrument", () => {
 		});
 
 		it("FL / Fl / fl をすべて同じ楽器として扱う", () => {
-			const result = sorted("Fl なかむら", "FL もり", "Fl みずの");
+			const _result = sorted("Fl なかむら", "FL もり", "Fl みずの");
 			// 全員 fl グループ = ob より前
 			const withOb = sorted("Ob やまだ", "FL もり", "Fl なかむら");
 			expect(withOb.indexOf("Ob やまだ")).toBeGreaterThan(
