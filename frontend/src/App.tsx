@@ -36,7 +36,7 @@ export default function App() {
 
 	return (
 		<div className="max-w-2xl mx-auto p-6 space-y-4">
-			<header className="flex gap-5 items-end">
+			<header className="flex flex-col items-start gap-x-5 sm:flex-row sm:items-end">
 				<h1 className="text-lg font-bold">{SERVICE_NAME}</h1>
 				<p className="py-1 text-sm text-gray-500">
 					調整さんのスケジュールを見やすく表示
