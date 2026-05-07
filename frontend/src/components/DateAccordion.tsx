@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { DateRow } from "../lib/chouseisan";
 import { AnswerGroup, type Person } from "./AnswerGroup";
+import { CircleIcon, CrossIcon, TriangleIcon } from "./icons";
 
 interface Props {
 	dateRow: DateRow;
@@ -43,9 +44,15 @@ export function DateAccordion({
 				</span>
 				<div className="flex items-center gap-3 shrink-0">
 					<div className="flex gap-2 text-xs font-medium">
-						<span className="text-green-700">◯{groups.o.length}</span>
-						<span className="text-amber-700">△{groups.delta.length}</span>
-						<span className="text-red-700">×{groups.x.length}</span>
+						<span className="text-green-700 flex items-center gap-0.5">
+							<CircleIcon className="w-[1em] h-[1em] shrink-0" />{groups.o.length}
+						</span>
+						<span className="text-amber-700 flex items-center gap-0.5">
+							<TriangleIcon className="w-[1em] h-[1em] shrink-0" />{groups.delta.length}
+						</span>
+						<span className="text-red-700 flex items-center gap-0.5">
+							<CrossIcon className="w-[1em] h-[1em] shrink-0" />{groups.x.length}
+						</span>
 					</div>
 					<span className="text-gray-400 text-xs">{open ? "▲" : "▼"}</span>
 				</div>
