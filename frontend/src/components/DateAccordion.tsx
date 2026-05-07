@@ -7,14 +7,22 @@ interface Props {
 	dateRow: DateRow;
 	participants: Person[];
 	activeName: string | null;
+	focusedPerson?: Person | null;
 	onChipClick: (person: Person) => void;
 	defaultOpen?: boolean;
 }
+
+const BADGE = {
+	o: { Icon: CircleIcon, className: "text-green-600 bg-green-50 border-green-400" },
+	delta: { Icon: TriangleIcon, className: "text-amber-600 bg-amber-50 border-amber-400" },
+	x: { Icon: CrossIcon, className: "text-red-600 bg-red-50 border-red-200" },
+} as const;
 
 export function DateAccordion({
 	dateRow,
 	participants,
 	activeName,
+	focusedPerson,
 	onChipClick,
 	defaultOpen = false,
 }: Props) {
@@ -31,6 +39,18 @@ export function DateAccordion({
 		}
 	});
 
+	const focusedIdx = focusedPerson
+		? participants.findIndex((p) => p.name === focusedPerson.name)
+		: -1;
+	const focusedAnswer = focusedIdx >= 0 ? dateRow.answers[focusedIdx] : null;
+	const badgeAnswer =
+		focusedAnswer &&
+		(focusedAnswer === "o" || focusedAnswer === "delta" || focusedAnswer === "x")
+			? focusedAnswer
+			: null;
+	const BadgeIcon = badgeAnswer ? BADGE[badgeAnswer].Icon : null;
+	const badgeCls = badgeAnswer ? BADGE[badgeAnswer].className : "";
+
 	return (
 		<div className="border border-gray-200 rounded-xl overflow-hidden">
 			<button
@@ -43,15 +63,25 @@ export function DateAccordion({
 					{dateRow.label}
 				</span>
 				<div className="flex items-center gap-3 shrink-0">
-					<div className="flex gap-2 text-xs font-medium">
+					{BadgeIcon && (
+						<span
+							className={`inline-flex items-center px-1.5 py-0.5 rounded-md border ${badgeCls}`}
+						>
+							<BadgeIcon className="w-3 h-3" />
+						</span>
+					)}
+					<div className="flex gap-2 text-xs font-medium tabular-nums">
 						<span className="text-green-700 flex items-center gap-0.5">
-							<CircleIcon className="w-[1em] h-[1em] shrink-0" />{groups.o.length}
+							<CircleIcon className="w-[1em] h-[1em] shrink-0" />
+							<span className="inline-block min-w-[2ch] text-right">{groups.o.length}</span>
 						</span>
 						<span className="text-amber-700 flex items-center gap-0.5">
-							<TriangleIcon className="w-[1em] h-[1em] shrink-0" />{groups.delta.length}
+							<TriangleIcon className="w-[1em] h-[1em] shrink-0" />
+							<span className="inline-block min-w-[2ch] text-right">{groups.delta.length}</span>
 						</span>
 						<span className="text-red-700 flex items-center gap-0.5">
-							<CrossIcon className="w-[1em] h-[1em] shrink-0" />{groups.x.length}
+							<CrossIcon className="w-[1em] h-[1em] shrink-0" />
+							<span className="inline-block min-w-[2ch] text-right">{groups.x.length}</span>
 						</span>
 					</div>
 					<span className="text-gray-400 text-xs">{open ? "▲" : "▼"}</span>
