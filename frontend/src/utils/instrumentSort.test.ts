@@ -132,6 +132,18 @@ describe("sortByInstrument", () => {
 			expect(result[3]).toBe("Vc はなこ");
 		});
 
+		it("全角のラテン文字で入力された楽器略称も認識する (Ｖｎ)", () => {
+			const result = sorted("次郎(CB)", "Ｖｎ いちろう");
+			expect(result[0]).toBe("Ｖｎ いちろう"); // vn
+			expect(result[1]).toBe("次郎(CB)"); // cb
+		});
+
+		it("楽器略称の間にスペースが入っていても認識する (V n やまむら)", () => {
+			const result = sorted("次郎(CB)", "V n やまむら");
+			expect(result[0]).toBe("V n やまむら"); // vn
+			expect(result[1]).toBe("次郎(CB)"); // cb
+		});
+
 		it("楽器不明は末尾に集まる", () => {
 			const result = sorted("まめこ", "Vn いちろう", "ぽんた");
 			expect(result[0]).toBe("Vn いちろう");

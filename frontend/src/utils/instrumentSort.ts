@@ -1,3 +1,5 @@
+import { normalizeFullwidthLatin } from "./normalizeFullwidthLatin";
+
 interface InstrumentGroup {
 	patterns: RegExp[];
 	rank: number;
@@ -30,15 +32,18 @@ const UNKNOWN_RANK = 14;
  */
 function getInstrumentRank(name: string): number {
 	// "bass trb" は bass でなく trb として扱う
-	const normalized = name
+	const normalized = normalizeFullwidthLatin(name)
 		.toLowerCase()
 		.replace(/bass\s*trb/g, "trb")
 		.replace(/bass\s*trombone/g, "trombone");
 
+	// "V n 山村本" のように、楽器名の間にスペースが入っている場合があるので、スペースを除去した文字列も作る
+	const altNormalized = normalized.replace(/\s/g, "");
+
 	let minRank = UNKNOWN_RANK;
 	for (const { patterns, rank } of INSTRUMENT_GROUPS) {
 		if (rank >= minRank) continue;
-		if (patterns.some((p) => p.test(normalized))) {
+		if (patterns.some((p) => p.test(normalized) || p.test(altNormalized))) {
 			minRank = rank;
 		}
 	}
